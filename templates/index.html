@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SzukamGracza - Aplikacja Czatu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="header">
+        <h1>SzukamGraczy.com</h1>
+    </div>
+    <div id="container">
+        <div id="category-container">
+            <label for="category">Wybierz kategorię:</label>
+            <select id="category" name="category">
+                <option value="general">Ogólna</option>
+                <option value="lol">League of Legends</option>
+                <option value="csgo">CS:GO</option>
+                <!-- Dodaj więcej kategorii, jeśli potrzebujesz -->
+            </select>
+        </div>
+        <div id="username-container">
+            <input id="username" placeholder="Wprowadź swój nick" autocomplete="off" />
+            <button id="set-username">Wchodzę!</button>
+        </div>
+        <ul id="messages" style="display:none;"></ul>
+        <form id="form" action="" style="display:none;">
+            <input id="input" autocomplete="off" />
+            <button>Wyślij</button>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        $('#set-username').click(function() {
+            var username = $('#username').val();
+            var category = $('#category').val();
+            if (username) {
+                socket.emit('set_user_category', {'username': username, 'category': category});
+                $('#username-container').hide();
+                $('#category-container').hide();
+                $('#messages').show();
+                $('#form').show();
+            }
+        });
+
+        $('#form').submit(function(){
+            var message = $('#input').val();
+            var category = $('#category').val();
+            socket.emit('message', {'message': message, 'category': category});
+            $('#input').val('');
+            return false;
+        });
+
+        socket.on('message', function(data){
+            $('#messages').append($('<li>').text(`[${data.category}] ${data.username}: ${data.message}`));
+            // Automatyczne przewijanie do dołu obszaru czatu
+            var chatArea = document.getElementById('messages');
+            chatArea.scrollTop = chatArea.scrollHeight;
+        });
+    </script>
+</body>
+</html>
