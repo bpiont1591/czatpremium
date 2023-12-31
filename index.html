@@ -4,7 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SzukamGracza - Aplikacja Czatu</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        #header {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        #container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        #category-container,
+        #username-container,
+        #form {
+            margin-top: 15px;
+        }
+
+        #messages {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            border-top: 1px solid #ccc;
+            margin-top: 20px;
+            padding-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        #messages li {
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
     <div id="header">
@@ -17,7 +61,6 @@
                 <option value="general">Ogólna</option>
                 <option value="lol">League of Legends</option>
                 <option value="csgo">CS:GO</option>
-                <!-- Dodaj więcej kategorii, jeśli potrzebujesz -->
             </select>
         </div>
         <div id="username-container">
@@ -58,7 +101,6 @@
 
         socket.on('message', function(data){
             $('#messages').append($('<li>').text(`[${data.category}] ${data.username}: ${data.message}`));
-            // Automatyczne przewijanie do dołu obszaru czatu
             var chatArea = document.getElementById('messages');
             chatArea.scrollTop = chatArea.scrollHeight;
         });
