@@ -1,67 +1,60 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SzukamGracza - Aplikacja Czatu</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>Panel Licencji</title>
+  <style>
+    body { font-family: Arial; background: #111; color: white; padding: 20px; }
+    table { width: 100%; max-width: 600px; border-collapse: collapse; margin-bottom: 20px; }
+    td, th { border: 1px solid #444; padding: 10px; text-align: left; }
+    input { padding: 5px; width: 200px; }
+    button { padding: 5px 10px; cursor: pointer; }
+  </style>
 </head>
 <body>
-    <div id="header">
-        <h1>SzukamGraczy.com</h1>
-    </div>
-    <div id="container">
-        <div id="category-container">
-            <label for="category">Wybierz kategorię:</label>
-            <select id="category" name="category">
-                <option value="general">Ogólna</option>
-                <option value="lol">League of Legends</option>
-                <option value="csgo">CS:GO</option>
-                <!-- Dodaj więcej kategorii, jeśli potrzebujesz -->
-            </select>
-        </div>
-        <div id="username-container">
-            <input id="username" placeholder="Wprowadź swój nick" autocomplete="off" />
-            <button id="set-username">Wchodzę!</button>
-        </div>
-        <ul id="messages" style="display:none;"></ul>
-        <form id="form" action="" style="display:none;">
-            <input id="input" autocomplete="off" />
-            <button>Wyślij</button>
-        </form>
-    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script>
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
+<h1>🔑 Panel Licencji</h1>
 
-        $('#set-username').click(function() {
-            var username = $('#username').val();
-            var category = $('#category').val();
-            if (username) {
-                socket.emit('set_user_category', {'username': username, 'category': category});
-                $('#username-container').hide();
-                $('#category-container').hide();
-                $('#messages').show();
-                $('#form').show();
-            }
-        });
+<input id="newKey" placeholder="Nowy klucz" />
+<button onclick="addKey()">Dodaj klucz</button>
 
-        $('#form').submit(function(){
-            var message = $('#input').val();
-            var category = $('#category').val();
-            socket.emit('message', {'message': message, 'category': category});
-            $('#input').val('');
-            return false;
-        });
+<h2>Aktywne Licencje</h2>
+<table id="table">
+  <tr><th>Klucz</th><th>Status</th></tr>
+</table>
 
-        socket.on('message', function(data){
-            $('#messages').append($('<li>').text(`[${data.category}] ${data.username}: ${data.message}`));
-            // Automatyczne przewijanie do dołu obszaru czatu
-            var chatArea = document.getElementById('messages');
-            chatArea.scrollTop = chatArea.scrollHeight;
-        });
-    </script>
+<script>
+async function loadKeys() {
+  const res = await fetch("/api/licenses");
+  const data = await res.json();
+  const table = document.getElementById("table");
+  table.innerHTML = "<tr><th>Klucz</th><th>Status</th></tr>";
+  Object.keys(data).forEach(key => {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${key}</td><td>${data[key] ? "Aktywna" : "Nieaktywna"}</td>`;
+    table.appendChild(row);
+  });
+}
+
+async function addKey() {
+  const input = document.getElementById("newKey");
+  const key = input.value.trim();
+  if (!key) return alert("Podaj klucz!");
+  const res = await fetch("/api/licenses", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ key })
+  });
+  const data = await res.json();
+  alert(data.message);
+  input.value = "";
+  loadKeys();
+}
+
+// Ładuj klucze przy starcie
+loadKeys();
+</script>
+
 </body>
 </html>
+
